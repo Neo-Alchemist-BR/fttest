@@ -1,51 +1,51 @@
-// Face Mesh Demo by Andy Kong
-// Base Javascript for setting up a camera-streaming HTML webpage.
-
+// Camera setup function - returns a Promise so we have to call it in an async function
 async function setupCamera() {
-  // Find the <video> element in the webpage,
-  // then use the mediaDevices API to request a camera from the user
-  video = document.getElementById("video");
-  const stream = await navigator.mediaDevices.getUserMedia({
-    audio: false,
-    video: {
-      facingMode: "user",
-      width: { ideal: 1920 },
-      height: { ideal: 1080 },
-    },
-  });
-  // Assign our camera to the HTML's video element
-  video.srcObject = stream;
-
-  return new Promise((resolve) => {
-    video.onloadedmetadata = () => {
-      resolve(video);
-    };
-  });
+    // Find the video element on our HTML page
+    video = document.getElementById('video');
+    
+    // Request the front-facing camera of the device
+    const stream = await navigator.mediaDevices.getUserMedia({
+        'audio': false,
+        'video': {
+          facingMode: 'user',
+          height: {ideal:1920},
+          width: {ideal: 1920},
+        },
+      });
+    video.srcObject = stream;
+    
+    // Handle the video stream once it loads.
+    return new Promise((resolve) => {
+        video.onloadedmetadata = () => {
+            resolve(video);
+        };
+    });
 }
 
-async function drawVideo() {
-  // Draw the video stream into our screen
-  ctx.drawImage(video, 0, 0);
-  // Call self again
-  requestAnimationFrame(drawVideo);
+function drawWebcamContinuous(){
+    ctx.drawImage(video,0,0);
+    requestAnimationFrame(drawWebcamContinuous);
 }
 
-// Set up variables to draw on the canvas
 var canvas;
 var ctx;
+
 async function main() {
-  // Set up front-facing camera
-  await setupCamera();
-  videoWidth = video.videoWidth;
-  videoHeight = video.videoHeight;
-  video.play();
+    // Set up front-facing camera
+    await setupCamera();
+    video.play()
 
-  // Set up the HTML Canvas to draw the video feed onto
-  canvas = document.getElementById("facecanvas");
-  canvas.width = videoWidth;
-  canvas.height = videoHeight;
-  ctx = canvas.getContext("2d");
-
-  // Start the video->canvas drawing loop
-  drawVideo();
+    // Set up canvas for livestreaming
+    canvas = document.getElementById('facecanvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx = canvas.getContext('2d');
+  
+    // Start continuous drawing function
+    drawWebcamContinuous();
+  
+    console.log("Camera setup done")
 }
+
+// Delay the camera request by a bit, until the main body has loaded
+document.addEventListener("DOMContentLoaded", main);
